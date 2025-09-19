@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Tag Test</title>
+</head>
+<body>
+    <h1>Script Tag Connection Test</h1>
+    <button id="testBtn">Test Connection</button>
+    <div id="result"></div>
+    
+    <!-- Load SDK via script tag -->
+    <script src="https://unpkg.com/@openai/agents-realtime@latest/dist/index.js"></script>
+    
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing connection...';
+            
+            try {
+                // Check if SDK is loaded
+                if (typeof RealtimeAgent === 'undefined' || typeof RealtimeSession === 'undefined') {
+                    throw new Error('SDK not loaded');
+                }
+                
+                result.innerHTML = 'SDK loaded, creating session...';
+                
+                // Get session
+                const sessionResponse = await fetch('/api/realtime/session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!sessionResponse.ok) {
+                    throw new Error('Failed to create session');
+                }
+                
+                const { clientSecret } = await sessionResponse.json();
+                result.innerHTML = 'Session created, testing connection...';
+                
+                // Create agent and session
+                const agent = new RealtimeAgent({
+                    name: 'Test Assistant',
+                    instructions: 'You are a test assistant.',
+                    voice: 'alloy'
+                });
+                
+                const session = new RealtimeSession(agent, {
+                    model: 'gpt-4o-realtime-preview-2025-06-03'
+                });
+                
+                // Try to connect
+                await session.connect({
+                    apiKey: clientSecret,
+                    transport: 'websocket',
+                    webrtc: false,
+                    useInsecureApiKey: true
+                });
+                
+                result.innerHTML = '✅ Connection successful!';
+                result.style.color = 'green';
+                
+                // Disconnect
+                await session.disconnect();
+                
+            } catch (error) {
+                result.innerHTML = `❌ Error: ${error.message}`;
+                result.style.color = 'red';
+                console.error('Connection test failed:', error);
+            }
+        });
+        
+        // Check SDK loading
+        window.addEventListener('load', () => {
+            console.log('SDK loaded:', typeof RealtimeAgent, typeof RealtimeSession);
+        });
+    </script>
+</body>
+</html>

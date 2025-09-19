@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Session Creation</title>
+</head>
+<body>
+    <h1>Testing Session Creation</h1>
+    <button id="testBtn">Test Session Creation</button>
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Creating session...';
+            
+            try {
+                const response = await fetch('/api/realtime/session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error);
+                }
+                
+                const data = await response.json();
+                result.innerHTML = `
+                    <h3>✅ Session Created Successfully!</h3>
+                    <p><strong>Session ID:</strong> ${data.sessionId}</p>
+                    <p><strong>Client Secret:</strong> ${data.clientSecret.substring(0, 20)}...</p>
+                `;
+                result.style.color = 'green';
+                
+            } catch (error) {
+                result.innerHTML = `<h3>❌ Error: ${error.message}</h3>`;
+                result.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDK Test</title>
+</head>
+<body>
+    <h1>Testing OpenAI SDK Loading</h1>
+    <div id="status">Loading...</div>
+    
+    <script type="module">
+        try {
+            const { RealtimeAgent, RealtimeSession } = await import('https://esm.sh/@openai/agents-realtime@latest');
+            
+            // Make them globally available
+            window.RealtimeAgent = RealtimeAgent;
+            window.RealtimeSession = RealtimeSession;
+            
+            const status = document.getElementById('status');
+            
+            console.log('SDK loaded successfully');
+            console.log('RealtimeAgent:', typeof RealtimeAgent);
+            console.log('RealtimeSession:', typeof RealtimeSession);
+            
+            if (typeof RealtimeAgent !== 'undefined') {
+                status.innerHTML = '✅ RealtimeAgent loaded successfully';
+                status.style.color = 'green';
+            } else {
+                status.innerHTML = '❌ RealtimeAgent not found';
+                status.style.color = 'red';
+            }
+        } catch (error) {
+            console.error('Error loading SDK:', error);
+            const status = document.getElementById('status');
+            status.innerHTML = '❌ Error loading SDK: ' + error.message;
+            status.style.color = 'red';
+        }
+    </script>
+</body>
+</html>

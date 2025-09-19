@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Connection Test</title>
+</head>
+<body>
+    <h1>Simple Connection Test</h1>
+    <button id="testBtn">Test Connection</button>
+    <div id="result"></div>
+    
+    <script type="module">
+        try {
+            const { RealtimeAgent, RealtimeSession } = await import('https://cdn.jsdelivr.net/npm/@openai/agents-realtime@latest/+esm');
+            
+            document.getElementById('testBtn').addEventListener('click', async () => {
+                const result = document.getElementById('result');
+                result.innerHTML = 'Testing connection...';
+                
+                try {
+                    // Get session
+                    const sessionResponse = await fetch('/api/realtime/session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (!sessionResponse.ok) {
+                        throw new Error('Failed to create session');
+                    }
+                    
+                    const { clientSecret } = await sessionResponse.json();
+                    result.innerHTML = 'Session created, testing connection...';
+                    
+                    // Create agent and session
+                    const agent = new RealtimeAgent({
+                        name: 'Test Assistant',
+                        instructions: 'You are a test assistant.',
+                        voice: 'alloy'
+                    });
+                    
+                const session = new RealtimeSession(agent, {
+                    model: 'gpt-realtime'
+                });
+                    
+                // Try to connect using the official approach
+                await session.connect({
+                    apiKey: clientSecret
+                });
+                    
+                    result.innerHTML = '✅ Connection successful!';
+                    result.style.color = 'green';
+                    
+                    // Disconnect
+                    await session.disconnect();
+                    
+                } catch (error) {
+                    result.innerHTML = `❌ Error: ${error.message}`;
+                    result.style.color = 'red';
+                    console.error('Connection test failed:', error);
+                }
+            });
+            
+        } catch (error) {
+            document.getElementById('result').innerHTML = `❌ SDK Error: ${error.message}`;
+            console.error('SDK loading failed:', error);
+        }
+    </script>
+</body>
+</html>

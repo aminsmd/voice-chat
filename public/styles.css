@@ -79,6 +79,11 @@ header p {
     animation: pulse 1.5s infinite;
 }
 
+.status-indicator.disconnecting {
+    background: #6c757d;
+    animation: pulse 1s infinite;
+}
+
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.2); }

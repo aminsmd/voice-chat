@@ -16,6 +16,21 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Serve the multi-party voice chat
+app.get('/multiparty', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'multiparty.html'));
+});
+
+// Serve the advanced multi-party voice chat
+app.get('/advanced-multiparty', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'advanced-multiparty.html'));
+});
+
+// Serve the recording multi-party voice chat
+app.get('/recording-multiparty', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'recording-multiparty.html'));
+});
+
 // Endpoint to create a realtime session and get ephemeral client key
 app.post('/api/realtime/session', async (req, res) => {
   try {

@@ -4,6 +4,7 @@ class VoiceChatApp {
         this.isConnected = false;
         this.isListening = false;
         this.isSpeaking = false;
+        this.isDisconnecting = false;
         
         this.initializeElements();
         this.attachEventListeners();
@@ -144,23 +145,61 @@ class VoiceChatApp {
     }
 
     async disconnect() {
-        if (this.session) {
-            try {
-                await this.session.disconnect();
-            } catch (error) {
-                console.error('Disconnect error:', error);
-            }
+        // Prevent multiple disconnect attempts
+        if (this.isDisconnecting) {
+            console.log('Already disconnecting, ignoring duplicate request');
+            return;
         }
         
+        console.log('Disconnecting...');
+        this.isDisconnecting = true;
+        
+        // Disable disconnect button and show disconnecting status
+        this.disconnectBtn.disabled = true;
+        this.updateStatus('disconnecting', 'Disconnecting...');
+        
+        if (this.session) {
+            try {
+                console.log('Calling session.disconnect()');
+                
+                // Add timeout to disconnect
+                const disconnectPromise = this.session.disconnect();
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Disconnect timeout')), 5000)
+                );
+                
+                await Promise.race([disconnectPromise, timeoutPromise]);
+                console.log('Session disconnected successfully');
+            } catch (error) {
+                console.error('Disconnect error:', error);
+                // Force disconnect even if session.disconnect() fails or times out
+                this.forceDisconnect();
+            }
+        } else {
+            // No session to disconnect, just cleanup
+            this.forceDisconnect();
+        }
+    }
+
+    forceDisconnect() {
+        console.log('Force disconnecting...');
+        
+        // Force cleanup
         this.isConnected = false;
         this.isListening = false;
         this.isSpeaking = false;
+        this.isDisconnecting = false;
+        
+        // Clear session reference
         this.session = null;
         
+        // Update UI immediately
         this.updateStatus('disconnected', 'Disconnected');
         this.updateVoiceStatus('Click Connect to start talking');
         this.updateButtons();
         this.updateVoiceIndicator();
+        
+        console.log('Force disconnect completed');
     }
 
     updateStatus(status, message) {

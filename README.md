@@ -4,11 +4,21 @@ A simple voice chat web application using OpenAI's Speech-to-speech architecture
 
 ## ✨ Features
 
+### Single-User Voice Chat
 - **Real-time Voice Conversation**: Speak naturally with an AI assistant
 - **Modern UI**: Beautiful, responsive design with voice indicators
 - **WebRTC Integration**: Uses OpenAI's Realtime API for low-latency communication
 - **Visual Feedback**: Animated voice wave indicators and status updates
 - **Cross-platform**: Works on desktop and mobile browsers
+
+### Multi-Party Voice Chat
+- **Group Voice Conversations**: Multiple users can join the same voice room
+- **Real-time Audio**: WebRTC peer-to-peer connections for low-latency audio
+- **Individual Controls**: Mute/unmute specific participants
+- **Speaking Indicators**: Visual feedback showing who's currently speaking
+- **Room Management**: Create and join rooms with unique IDs
+- **Participant Statistics**: Real-time stats on participants, speaking status, and connection quality
+- **Advanced Features**: Kick participants, mute all, connection quality monitoring
 
 ## 🚀 Quick Start
 
@@ -44,10 +54,20 @@ A simple voice chat web application using OpenAI's Speech-to-speech architecture
 
 ### Usage
 
-1. Click "Connect" to start the voice session
-2. Allow microphone access when prompted by your browser
-3. Start speaking naturally - the AI will respond with voice
-4. Use "Disconnect" to end the session
+#### Single-User Voice Chat
+1. Visit `http://localhost:3002` for AI voice chat
+2. Click "Connect" to start the voice session
+3. Allow microphone access when prompted by your browser
+4. Start speaking naturally - the AI will respond with voice
+5. Use "Disconnect" to end the session
+
+#### Multi-Party Voice Chat
+1. Visit `http://localhost:3002/multiparty` for basic multi-party chat
+2. Visit `http://localhost:3002/advanced-multiparty` for advanced features
+3. Enter your name and room ID (or create a new room)
+4. Share the room ID with others to join the same conversation
+5. Use individual controls to mute/unmute participants
+6. Monitor real-time statistics and connection quality
 
 ## 🏗️ Architecture
 

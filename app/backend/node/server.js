@@ -8,8 +8,11 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Get the project root directory (3 levels up from this file)
+const projectRoot = path.join(__dirname, '../../..');
+
 // Create directories for saving data
-const SAVE_DIR = path.join(__dirname, 'saved_data');
+const SAVE_DIR = path.join(projectRoot, 'saved_data');
 const AUDIO_DIR = path.join(SAVE_DIR, 'audio');
 const TRANSCRIPT_DIR = path.join(SAVE_DIR, 'transcripts');
 
@@ -43,11 +46,15 @@ function getLocalIPAddress() {
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Increase limit for large audio files
-app.use(express.static('public'));
+const frontendPublicPath = path.join(projectRoot, 'app/frontend/public');
+const frontendSrcPath = path.join(projectRoot, 'app/frontend/src');
+
+app.use(express.static(frontendPublicPath));
+app.use('/src', express.static(frontendSrcPath));
 
 // Serve the main HTML file
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(frontendPublicPath, 'index.html'));
 });
 
 

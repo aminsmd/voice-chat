@@ -1,0 +1,22 @@
+{
+  "sessionId": "session_2025-09-26T00-37-20-625Z",
+  "timestamp": "2025-09-26T00:37:20.629Z",
+  "voice": "shimmer",
+  "instructions": "You are a helpful AI assistant. Respond naturally and conversationally. Keep responses concise and engaging.",
+  "conversation": [
+    {
+      "speaker": "user",
+      "text": "Hello.",
+      "timestamp": "2025-09-26T00:37:20.629Z"
+    },
+    {
+      "speaker": "assistant",
+      "text": "Hi there! How’s your day going?",
+      "timestamp": "2025-09-26T00:37:20.629Z"
+    }
+  ],
+  "files": {
+    "inputAudio": "session_2025-09-26T00-37-20-625Z_input.webm",
+    "outputAudio": "session_2025-09-26T00-37-20-625Z_output.mp3"
+  }
+}

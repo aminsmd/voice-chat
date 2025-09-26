@@ -1,0 +1,39 @@
+{
+  "sessionId": "session_1758847415624_3ny4mj0vr",
+  "startTime": "2025-09-26T00:43:35.624Z",
+  "voice": "shimmer",
+  "instructions": "You are a helpful AI assistant. Respond naturally and conversationally. Keep responses concise and engaging.",
+  "conversation": [
+    {
+      "messageId": "msg_1758847425513_w2bkn7",
+      "speaker": "user",
+      "text": "Hello.",
+      "timestamp": "2025-09-26T00:43:45.513Z",
+      "audioFile": "session_1758847415624_3ny4mj0vr_msg_1758847425513_w2bkn7_input.webm"
+    },
+    {
+      "messageId": "msg_1758847425513_w2bkn7",
+      "speaker": "assistant",
+      "text": "Hi there! How’s your day going?",
+      "timestamp": "2025-09-26T00:43:45.513Z",
+      "audioFile": "session_1758847415624_3ny4mj0vr_msg_1758847425513_w2bkn7_output.mp3"
+    },
+    {
+      "messageId": "msg_1758847438374_1168j5",
+      "speaker": "user",
+      "text": "Um, Glenville, how are you doing?",
+      "timestamp": "2025-09-26T00:43:58.374Z",
+      "audioFile": "session_1758847415624_3ny4mj0vr_msg_1758847438374_1168j5_input.webm"
+    },
+    {
+      "messageId": "msg_1758847438374_1168j5",
+      "speaker": "assistant",
+      "text": "I’m doing well, thanks for asking! How about you? What’s on your mind today?",
+      "timestamp": "2025-09-26T00:43:58.374Z",
+      "audioFile": "session_1758847415624_3ny4mj0vr_msg_1758847438374_1168j5_output.mp3"
+    }
+  ],
+  "messageCount": 4,
+  "lastActivity": "2025-09-26T00:43:58.374Z",
+  "endTime": "2025-09-26T00:44:05.252Z"
+}

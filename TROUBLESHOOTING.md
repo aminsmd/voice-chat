@@ -1,5 +1,23 @@
 # 🔧 Troubleshooting Guide
 
+## 🎨 Frontend Styling Issues
+
+### **CSS/JS Files Not Loading**
+**Symptoms:** Page loads but without styles, or JavaScript functionality not working
+
+**Solutions:**
+1. **Check file paths** - After reorganization, CSS/JS files moved to `app/frontend/src/`
+2. **Verify server configuration** - Server should serve both `public` and `src` directories
+3. **Check browser console** for 404 errors on CSS/JS files
+
+**Quick Fix:**
+```bash
+# Restart the server to apply new static file serving
+npm start
+```
+
+---
+
 ## "Error processing audio" - Common Issues & Solutions
 
 ### 🚨 Quick Diagnosis

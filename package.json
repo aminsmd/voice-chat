@@ -2,11 +2,11 @@
   "name": "voice-chat",
   "version": "1.0.0",
   "description": "A simple voice chat web application using OpenAI's Speech-to-speech architecture",
-  "main": "server.js",
+  "main": "app/backend/node/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "setup": "node setup.js",
+    "start": "node app/backend/node/server.js",
+    "dev": "nodemon app/backend/node/server.js",
+    "setup": "node app/backend/node/setup.js",
     "test": "node test_architectures.js",
     "test:chained": "node -e \"require('./test_architectures.js').testChainedArchitecture()\"",
     "test:realtime": "node -e \"require('./test_architectures.js').testRealtimeArchitecture()\""

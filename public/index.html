@@ -13,11 +13,48 @@
             <p>Speak naturally with your AI assistant</p>
         </header>
 
+        <!-- Tab Navigation -->
+        <nav class="tab-navigation">
+            <button class="tab-btn active" data-tab="voice-chat">🎤 Voice Chat</button>
+            <button class="tab-btn" data-tab="data-explorer">📊 Data Explorer</button>
+        </nav>
+
         <main>
-            <div class="chat-container">
+            <!-- Voice Chat Tab Content -->
+            <div id="voice-chat-tab" class="tab-content active">
+                <div class="main-layout">
+                <div class="left-column">
+                    <div class="chat-container">
                 <div id="status" class="status">
                     <div class="status-indicator" id="statusIndicator"></div>
                     <span id="statusText">Ready to connect</span>
+                </div>
+
+                <div class="prompt-section">
+                    <label for="customPrompt" class="prompt-label">Custom Prompt (Optional):</label>
+                    <textarea 
+                        id="customPrompt" 
+                        class="prompt-input" 
+                        placeholder="Enter custom instructions for the AI assistant..."
+                        rows="3"
+                    ></textarea>
+                </div>
+
+                <div class="api-mode-section">
+                    <label for="apiModeSelector" class="api-mode-label">API Mode:</label>
+                    <select id="apiModeSelector" class="api-mode-selector">
+                        <option value="realtime">Real-time API - Low latency, WebRTC streaming</option>
+                        <option value="chained">Chained API - Speech-to-text → AI → Text-to-speech</option>
+                    </select>
+                    <small class="api-mode-note">Choose between real-time streaming or chained processing</small>
+                </div>
+
+                <div class="voice-section">
+                    <label for="voiceSelector" class="voice-label">AI Voice:</label>
+                    <select id="voiceSelector" class="voice-selector">
+                        <!-- Voice options will be dynamically populated based on API mode -->
+                    </select>
+                    <small class="voice-note">Note: Voice options change based on API mode. Voice changes require disconnecting and reconnecting to take effect</small>
                 </div>
 
                 <div class="controls">
@@ -29,28 +66,68 @@
                         <span class="btn-icon">🔌</span>
                         Disconnect
                     </button>
+                    <button id="reconnectBtn" class="btn btn-warning" disabled>
+                        <span class="btn-icon">🔄</span>
+                        Reconnect with New Voice
+                    </button>
                 </div>
 
-                <div class="voice-indicator">
-                    <div class="voice-wave" id="voiceWave">
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
-                        <div class="wave-bar"></div>
+                    <div class="voice-indicator">
+                        <div class="voice-wave" id="voiceWave">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                        <p id="voiceStatus">Click Connect to start talking</p>
                     </div>
-                    <p id="voiceStatus">Click Connect to start talking</p>
+
+                    <div class="recording-controls" id="recordingControls" style="display: none;">
+                        <button id="talkBtn" class="btn btn-talk">
+                            <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                            </svg>
+                            <span class="talk-label">Hold to Talk</span>
+                        </button>
+                    </div>
+
+                    </div>
+
+                    <div class="info-panel">
+                        <h3>🎯 How to use:</h3>
+                        <ol>
+                            <li><strong>Choose API Mode:</strong> Real-time for low latency, Chained for processing</li>
+                            <li><strong>Select Voice:</strong> Pick your preferred AI voice</li>
+                            <li><strong>Click Connect:</strong> Start the voice session</li>
+                            <li><strong>Allow Microphone:</strong> Grant permission when prompted</li>
+                            <li><strong>Start Talking:</strong> Speak naturally and get AI responses</li>
+                            <li><strong>View Transcript:</strong> See conversation history on the right</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="transcript-column">
+                    <div class="transcript-section" id="transcriptSection">
+                        <h3>💬 Conversation Transcript</h3>
+                        <div class="transcript-container" id="transcriptContainer">
+                            <div class="transcript-placeholder">
+                                <p>Start a conversation to see the transcript here</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            </div>
 
-            <div class="info-panel">
-                <h3>How to use:</h3>
-                <ol>
-                    <li>Click "Connect" to start the voice session</li>
-                    <li>Allow microphone access when prompted</li>
-                    <li>Start speaking naturally</li>
-                    <li>The AI will respond with voice</li>
-                </ol>
+            <!-- Data Explorer Tab Content -->
+            <div id="data-explorer-tab" class="tab-content">
+                <div class="data-explorer-container">
+                    <h2>📊 Saved Voice Chat Data</h2>
+                    <div id="loading" class="loading">Loading saved sessions...</div>
+                    <div id="error" class="error" style="display: none;"></div>
+                    <div id="sessions-container"></div>
+                </div>
             </div>
         </main>
 
@@ -61,14 +138,220 @@
 
     <!-- Load SDK using the official approach -->
     <script type="module">
-        import { RealtimeAgent, RealtimeSession } from 'https://cdn.jsdelivr.net/npm/@openai/agents-realtime@latest/+esm';
-        
-        // Make them globally available
-        window.RealtimeAgent = RealtimeAgent;
-        window.RealtimeSession = RealtimeSession;
-        
-        console.log('SDK loaded successfully:', typeof RealtimeAgent, typeof RealtimeSession);
+        (async () => {
+            try {
+                console.log('Starting SDK import...');
+                const { RealtimeAgent, RealtimeSession } = await import('https://cdn.jsdelivr.net/npm/@openai/agents-realtime@latest/+esm');
+                
+                // Make them globally available
+                window.RealtimeAgent = RealtimeAgent;
+                window.RealtimeSession = RealtimeSession;
+                
+                console.log('SDK loaded successfully:', typeof RealtimeAgent, typeof RealtimeSession);
+                console.log('RealtimeAgent:', RealtimeAgent);
+                console.log('RealtimeSession:', RealtimeSession);
+                
+                // Trigger app initialization after SDK is loaded
+                if (window.initializeApp) {
+                    window.initializeApp();
+                }
+            } catch (error) {
+                console.error('Error loading SDK:', error);
+            }
+        })();
     </script>
     <script src="app.js"></script>
+    
+    <!-- Debug script -->
+    <script>
+        // Add some debugging to help identify issues
+        setTimeout(() => {
+            console.log('=== DEBUG INFO ===');
+            console.log('RealtimeAgent available:', typeof window.RealtimeAgent);
+            console.log('RealtimeSession available:', typeof window.RealtimeSession);
+            console.log('VoiceChatApp available:', typeof window.voiceChatApp);
+            
+            // Check if elements exist
+            const elements = ['connectBtn', 'disconnectBtn', 'customPrompt', 'voiceSelector'];
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                console.log(`${id}:`, element ? 'found' : 'NOT found');
+            });
+        }, 2000);
+    </script>
+    
+    <!-- Tab Navigation Script -->
+    <script>
+        // Tab navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(targetTab + '-tab').classList.add('active');
+                    
+                    // Load data explorer content when switching to that tab
+                    if (targetTab === 'data-explorer') {
+                        loadDataExplorer();
+                    }
+                });
+            });
+        });
+        
+        // Data Explorer functionality (copied from saved-data.html)
+        let sessions = [];
+        
+        async function loadDataExplorer() {
+            try {
+                const response = await fetch('/api/saved-data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessions = data.sessions;
+                    displaySessions();
+                } else {
+                    showError('Failed to load sessions');
+                }
+            } catch (error) {
+                showError('Error loading sessions: ' + error.message);
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        function displaySessions() {
+            const container = document.getElementById('sessions-container');
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'none';
+            
+            if (sessions.length === 0) {
+                container.innerHTML = '<div class="no-data">No saved sessions found. Start a conversation using the chained architecture to see data here.</div>';
+                return;
+            }
+            
+            container.innerHTML = sessions.map(session => `
+                <div class="session-card">
+                    <div class="session-header">
+                        <div class="session-id">${session.sessionId}</div>
+                        <div class="session-timestamp">${new Date(session.timestamp).toLocaleString()}</div>
+                    </div>
+                    
+                    <div class="session-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Voice</div>
+                            <div class="detail-value">${session.voice}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Messages</div>
+                            <div class="detail-value">${session.conversationLength}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Input Audio</div>
+                            <div class="detail-value">${session.hasAudio.input ? '✅ Available' : '❌ Missing'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Output Audio</div>
+                            <div class="detail-value">${session.hasAudio.output ? '✅ Available' : '❌ Missing'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="audio-controls">
+                        <button class="audio-btn" onclick="loadSessionDetails('${session.sessionId}')">
+                            📝 View Conversation
+                        </button>
+                    </div>
+                    
+                    <div id="conversation-${session.sessionId}" class="conversation" style="display: none;"></div>
+                </div>
+            `).join('');
+        }
+        
+        async function loadSessionDetails(sessionId) {
+            const conversationDiv = document.getElementById(`conversation-${sessionId}`);
+            
+            if (conversationDiv.style.display === 'none') {
+                try {
+                    const response = await fetch(`/api/saved-data/${sessionId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const session = data.session;
+                        conversationDiv.innerHTML = session.conversation.map(msg => `
+                            <div class="message ${msg.speaker}">
+                                <div class="message-header">
+                                    <div class="message-speaker">${msg.speaker === 'user' ? '👤 You' : '🤖 Assistant'}</div>
+                                    <button class="play-audio-btn" onclick="playMessageAudio('${session.sessionId}', '${msg.messageId}', '${msg.speaker}')" 
+                                            ${!msg.audioFile ? 'disabled' : ''} title="Play audio">
+                                        🔊
+                                    </button>
+                                </div>
+                                <div class="message-text">${msg.text}</div>
+                                <div class="message-timestamp">${new Date(msg.timestamp).toLocaleString()}</div>
+                            </div>
+                        `).join('');
+                        conversationDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    conversationDiv.innerHTML = '<div class="error">Error loading conversation details</div>';
+                    conversationDiv.style.display = 'block';
+                }
+            } else {
+                conversationDiv.style.display = 'none';
+            }
+        }
+        
+        function playMessageAudio(sessionId, messageId, speaker) {
+            const audioType = speaker === 'user' ? 'input' : 'output';
+            const audioUrl = `/api/saved-data/${sessionId}/${messageId}/${audioType}`;
+            
+            // Find the button and add playing state
+            const button = event.target.closest('.play-audio-btn');
+            if (button) {
+                button.classList.add('playing');
+                button.disabled = true;
+            }
+            
+            const audio = new Audio(audioUrl);
+            
+            audio.onended = () => {
+                if (button) {
+                    button.classList.remove('playing');
+                    button.disabled = false;
+                }
+            };
+            
+            audio.onerror = (error) => {
+                console.error('Error playing audio:', error);
+                if (button) {
+                    button.classList.remove('playing');
+                    button.disabled = false;
+                }
+                alert('Error playing audio: ' + error.message);
+            };
+            
+            audio.play().catch(error => {
+                console.error('Error playing audio:', error);
+                if (button) {
+                    button.classList.remove('playing');
+                    button.disabled = false;
+                }
+                alert('Error playing audio: ' + error.message);
+            });
+        }
+    </script>
 </body>
 </html>

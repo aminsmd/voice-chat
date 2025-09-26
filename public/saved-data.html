@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Voice Chat Data</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .session-card {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+        
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .session-id {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .session-timestamp {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .session-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .detail-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #007bff;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .detail-value {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .conversation {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .message.user {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            margin-left: 20px;
+        }
+        
+        .message.assistant {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+            margin-right: 20px;
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .message-speaker {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        
+        .play-audio-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #6c757d;
+        }
+        
+        .play-audio-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #007bff;
+            transform: scale(1.1);
+        }
+        
+        .play-audio-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .play-audio-btn.playing {
+            color: #28a745;
+            animation: pulse 1s infinite;
+        }
+        
+        .message-text {
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .message-timestamp {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .audio-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .audio-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+        
+        .audio-btn:hover {
+            background: #0056b3;
+        }
+        
+        .audio-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Saved Voice Chat Data</h1>
+        <div id="loading" class="loading">Loading saved sessions...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="sessions-container"></div>
+    </div>
+
+    <script>
+        let sessions = [];
+        
+        async function loadSessions() {
+            try {
+                const response = await fetch('/api/saved-data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessions = data.sessions;
+                    displaySessions();
+                } else {
+                    showError('Failed to load sessions');
+                }
+            } catch (error) {
+                showError('Error loading sessions: ' + error.message);
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        function displaySessions() {
+            const container = document.getElementById('sessions-container');
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'none';
+            
+            if (sessions.length === 0) {
+                container.innerHTML = '<div class="no-data">No saved sessions found. Start a conversation using the chained architecture to see data here.</div>';
+                return;
+            }
+            
+            container.innerHTML = sessions.map(session => `
+                <div class="session-card">
+                    <div class="session-header">
+                        <div class="session-id">${session.sessionId}</div>
+                        <div class="session-timestamp">${new Date(session.timestamp).toLocaleString()}</div>
+                    </div>
+                    
+                    <div class="session-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Voice</div>
+                            <div class="detail-value">${session.voice}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Messages</div>
+                            <div class="detail-value">${session.conversationLength}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Input Audio</div>
+                            <div class="detail-value">${session.hasAudio.input ? '✅ Available' : '❌ Missing'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Output Audio</div>
+                            <div class="detail-value">${session.hasAudio.output ? '✅ Available' : '❌ Missing'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="audio-controls">
+                        <button class="audio-btn" onclick="loadSessionDetails('${session.sessionId}')">
+                            📝 View Conversation
+                        </button>
+                    </div>
+                    
+                    <div id="conversation-${session.sessionId}" class="conversation" style="display: none;"></div>
+                </div>
+            `).join('');
+        }
+        
+        async function loadSessionDetails(sessionId) {
+            const conversationDiv = document.getElementById(`conversation-${sessionId}`);
+            
+            if (conversationDiv.style.display === 'none') {
+                try {
+                    const response = await fetch(`/api/saved-data/${sessionId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const session = data.session;
+                        conversationDiv.innerHTML = session.conversation.map(msg => `
+                            <div class="message ${msg.speaker}">
+                                <div class="message-header">
+                                    <div class="message-speaker">${msg.speaker === 'user' ? '👤 You' : '🤖 Assistant'}</div>
+                                    <button class="play-audio-btn" onclick="playMessageAudio('${session.sessionId}', '${msg.messageId}', '${msg.speaker}')" 
+                                            ${!msg.audioFile ? 'disabled' : ''} title="Play audio">
+                                        🔊
+                                    </button>
+                                </div>
+                                <div class="message-text">${msg.text}</div>
+                                <div class="message-timestamp">${new Date(msg.timestamp).toLocaleString()}</div>
+                            </div>
+                        `).join('');
+                        conversationDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    conversationDiv.innerHTML = '<div class="error">Error loading conversation details</div>';
+                    conversationDiv.style.display = 'block';
+                }
+            } else {
+                conversationDiv.style.display = 'none';
+            }
+        }
+        
+        function playMessageAudio(sessionId, messageId, speaker) {
+            const audioType = speaker === 'user' ? 'input' : 'output';
+            const audioUrl = `/api/saved-data/${sessionId}/${messageId}/${audioType}`;
+            
+            // Find the button and add playing state
+            const button = event.target.closest('.play-audio-btn');
+            if (button) {
+                button.classList.add('playing');
+                button.disabled = true;
+            }
+            
+            const audio = new Audio(audioUrl);
+            
+            audio.onended = () => {
+                if (button) {
+                    button.classList.remove('playing');
+                    button.disabled = false;
+                }
+            };
+            
+            audio.onerror = (error) => {
+                console.error('Error playing audio:', error);
+                if (button) {
+                    button.classList.remove('playing');
+                    button.disabled = false;
+                }
+                alert('Error playing audio: ' + error.message);
+            };
+            
+            audio.play().catch(error => {
+                console.error('Error playing audio:', error);
+                if (button) {
+                    button.classList.remove('playing');
+                    button.disabled = false;
+                }
+                alert('Error playing audio: ' + error.message);
+            });
+        }
+        
+        // Load sessions on page load
+        loadSessions();
+    </script>
+</body>
+</html>

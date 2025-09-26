@@ -3,67 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Connection Test</title>
+    <title>Simple SDK Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
 </head>
 <body>
-    <h1>Simple Connection Test</h1>
-    <button id="testBtn">Test Connection</button>
-    <div id="result"></div>
-    
+    <h1>Simple SDK Test</h1>
+    <div id="results" class="log">Testing SDK import...</div>
+
     <script type="module">
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = 'log') {
+            const color = type === 'error' ? 'error' : 'success';
+            resultsDiv.innerHTML += `<div class="${color}">${message}</div>`;
+            console.log(message);
+        }
+
         try {
+            log('Starting SDK import test...');
+            
+            // Test 1: Try to import the SDK
+            log('Attempting to import RealtimeAgent and RealtimeSession...');
+            
             const { RealtimeAgent, RealtimeSession } = await import('https://cdn.jsdelivr.net/npm/@openai/agents-realtime@latest/+esm');
             
-            document.getElementById('testBtn').addEventListener('click', async () => {
-                const result = document.getElementById('result');
-                result.innerHTML = 'Testing connection...';
-                
-                try {
-                    // Get session
-                    const sessionResponse = await fetch('/api/realtime/session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    
-                    if (!sessionResponse.ok) {
-                        throw new Error('Failed to create session');
-                    }
-                    
-                    const { clientSecret } = await sessionResponse.json();
-                    result.innerHTML = 'Session created, testing connection...';
-                    
-                    // Create agent and session
-                    const agent = new RealtimeAgent({
-                        name: 'Test Assistant',
-                        instructions: 'You are a test assistant.',
-                        voice: 'alloy'
-                    });
-                    
-                const session = new RealtimeSession(agent, {
-                    model: 'gpt-realtime'
-                });
-                    
-                // Try to connect using the official approach
-                await session.connect({
-                    apiKey: clientSecret
-                });
-                    
-                    result.innerHTML = '✅ Connection successful!';
-                    result.style.color = 'green';
-                    
-                    // Disconnect
-                    await session.disconnect();
-                    
-                } catch (error) {
-                    result.innerHTML = `❌ Error: ${error.message}`;
-                    result.style.color = 'red';
-                    console.error('Connection test failed:', error);
-                }
+            log('✓ SDK import successful!');
+            log(`RealtimeAgent type: ${typeof RealtimeAgent}`);
+            log(`RealtimeSession type: ${typeof RealtimeSession}`);
+            
+            // Test 2: Try to create an agent
+            log('Testing agent creation...');
+            
+            const agent = new RealtimeAgent({
+                name: 'Test Agent',
+                instructions: 'You are a test agent.',
+                voice: 'alloy',
+                interruptible: true
             });
             
+            log('✓ Agent created successfully!');
+            log(`Agent voice: ${agent.voice}`);
+            log(`Agent name: ${agent.name}`);
+            log(`Agent instructions: ${agent.instructions}`);
+            
+            // Test 3: Check agent properties
+            log('Agent properties: ' + Object.keys(agent).join(', '));
+            log('Agent methods: ' + Object.getOwnPropertyNames(Object.getPrototypeOf(agent)).join(', '));
+            
+            // Test 4: Try different voices (prioritize new voices)
+            const voices = ['cedar', 'marin', 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+            log('Testing different voices...');
+            log('Note: New voices (Cedar, Marin) are recommended for Realtime API');
+            
+            for (const voice of voices) {
+                try {
+                    const testAgent = new RealtimeAgent({
+                        name: 'Test Agent',
+                        instructions: 'You are a test agent.',
+                        voice: voice,
+                        interruptible: true
+                    });
+                    const isNewVoice = voice === 'cedar' || voice === 'marin';
+                    const status = isNewVoice ? '✓ (NEW)' : '✓ (legacy)';
+                    log(`${status} Voice '${voice}' works`);
+                } catch (error) {
+                    log(`✗ Voice '${voice}' failed: ${error.message}`, 'error');
+                }
+            }
+            
         } catch (error) {
-            document.getElementById('result').innerHTML = `❌ SDK Error: ${error.message}`;
-            console.error('SDK loading failed:', error);
+            log(`✗ SDK import failed: ${error.message}`, 'error');
+            log(`Error details: ${error.stack}`, 'error');
         }
     </script>
 </body>
